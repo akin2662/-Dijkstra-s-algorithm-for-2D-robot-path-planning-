@@ -102,6 +102,13 @@ def down_left(image, node):
         return (new_node,np.sqrt(2))
 
 image = map()
+start_y = int(input("Y coordinate of the start position:"))
+start_x = int(input("X coordinate of the start position:"))
+start_node = (start_y,start_x)
+
+goal_y = int(input("Y coordinate of the goal position"))
+goal_x = int(input("X coordinate of the goal position"))
+goal_node = (goal_y,goal_x)
 # cv.imshow("map",image)
 # cv.waitKey(0)
 
