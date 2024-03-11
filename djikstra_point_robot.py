@@ -37,7 +37,71 @@ def map():
 
     return image
 
+# Check if the node is within boundaries
+def within_boundary(node):
+    if 0 <= node[0] < 500:
+        if 0 <= node[1] < 1200:
+            return True
+
+    return False
+
+# Check if the node is in freespace
+def in_free_space(image):
+    free_space = np.where(image == 0)
+    free_space_list = list(zip(free_space[0],free_space[1]))
+    free_space_dict = OrderedDict.fromkeys(free_space_list)
+    return list(free_space_dict)
+
+# Move the robot up
+def up(image, node):
+    new_node = (node[0] + 1, node[1])
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,1)
+
+# Move the robot down
+def down(image, node):
+    new_node = (node[0] - 1, node[1])
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,1)
+
+# Move the robot to the left
+def left(image, node):
+    new_node = (node[0], node[1] - 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,1)
+
+# Move the robot to the right
+def right(image, node):
+    new_node = (node[0], node[1] + 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,1)
+
+
+# Move the robot up diagonally to the right
+def up_right(image, node):
+    new_node = (node[0] + 1, node[1] + 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,np.sqrt(2))
+
+# Move the robot up diagonally to the left
+def up_left(image, node):
+    new_node = (node[0] + 1, node[1] - 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,np.sqrt(2))
+
+# Move the robot down diagonally to the right
+def down_right(image, node):
+    new_node = (node[0] - 1, node[1] + 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,np.sqrt(2))
+
+# Move the robot down diagonally to the left
+def down_left(image, node):
+    new_node = (node[0] - 1, node[1] - 1)
+    if within_boundary(new_node) and new_node in in_free_space(image):
+        return (new_node,np.sqrt(2))
+
 image = map()
-cv.imshow("map",image)
-cv.waitKey(0)
+# cv.imshow("map",image)
+# cv.waitKey(0)
 
