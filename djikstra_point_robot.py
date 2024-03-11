@@ -5,7 +5,15 @@ from collections import OrderedDict
 import heapq as hq
 import time
 
+def user_input():
+    start_x = int(input(f"X coordinate of the start position:"))
+    start_y = int(input(f"Y coordinate of the start position:"))
+    start_node = (start_y,start_x)
 
+    goal_x = int(input("X coordinate of the goal position"))
+    goal_y = int(input("Y coordinate of the goal position"))
+    goal_node = (goal_y,goal_x)
+    return start_node,goal_node
 # Generating the map
 def map():
 
@@ -19,7 +27,7 @@ def map():
     white = (255,255,255)
 
 
-# vertics for the hexagon
+# vertices for the hexagon
     vertices = np.array([[520,155],[650,80],[780,155],[780,305],[650,380],[520,305]],dtype='int32')
     vertices_clr = np.array([[515, 150], [650, 73], [785, 150], [785, 310], [650, 387], [515, 310]], dtype='int32')
 
@@ -48,7 +56,7 @@ def within_boundary(node):
 
     return False
 
-# Check if the node is in freespace
+# Check if the node is in free-space
 def in_free_space(image):
     free_space = np.where(image == 0)
     free_space_list = list(zip(free_space[0],free_space[1]))
@@ -104,6 +112,7 @@ def down_left(image, node):
     if within_boundary(new_node) and new_node in in_free_space(image):
         return (new_node,np.sqrt(2))
 
+# Grouping all the actions in a list
 def performActions(image,node):
     u = up(image, node)
     d = down(image, node)
@@ -116,6 +125,7 @@ def performActions(image,node):
 
     return [u,d,l,r,ur,ul,dr,dl]
 
+# writing backtrack function
 def backtrack(path,start_node,goal_node):
     node = goal_node
     final_path = []
@@ -126,11 +136,13 @@ def backtrack(path,start_node,goal_node):
     final_path.reverse()
     return final_path
 
-def djikstra(image,start_node,goal_node):
+# performing dijkstra algorithm
+def dijkstra(image,start_node,goal_node):
     start_node_cost = 0
     open_list = []
     closed_list = {start_node:start_node_cost}
     path = {}
+    all_nodes = []
     hq.heappush(open_list,(start_node_cost,start_node))
     hq.heapify(open_list)
     while open_list:
@@ -151,21 +163,45 @@ def djikstra(image,start_node,goal_node):
                     hq.heappush(open_list, (closed_list[new_node], new_node))
 
     final_path = backtrack(path,start_node,goal_node)
-    return final_path
+    for keys in closed_list.keys():
+        all_nodes.append(keys)
+    return final_path,all_nodes
 
 
 start_time = time.time()
 image = map()
-start_y = int(input("Y coordinate of the start position:"))
-start_x = int(input("X coordinate of the start position:"))
-start_node = (start_y,start_x)
+image_out = []
+shortest_path = []
+travelled_node = []
+while True:
+    start, goal = user_input()
+    if start in in_free_space(image) and goal in in_free_space(image):
+        path,all_nodes = dijkstra(image,start,goal)
+        shortest_path = path
+        travelled_node = all_nodes
+        break
+    else:
+        print("In obstacle space, reenter new coordinates")
 
-goal_y = int(input("Y coordinate of the goal position"))
-goal_x = int(input("X coordinate of the goal position"))
-goal_node = (goal_y,goal_x)
+for i in travelled_node:
+    image[i[0],i[1]] = (255,0,255)
+    image_out.append(image)
 
-path = djikstra(image,start_node,goal_node)
-print(path)
+for j in shortest_path:
+    image[j[0],j[1]] = (0,255,255)
+    image_out.append(image)
+
+frame_width = image.shape[1]
+frame_height = image.shape[0]
+fps = 5
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
+out = cv.VideoWriter('output_video.mp4', fourcc, fps, (frame_width, frame_height))
+
+for i in range(len(image_out)):
+    out.write(image_out[i])
+
+out.release()
+
 end_time = time.time()
 print(end_time-start_time)
 
