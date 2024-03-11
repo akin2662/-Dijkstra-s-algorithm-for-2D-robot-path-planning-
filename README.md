@@ -1,1 +1,1 @@
-# ENPM-661--Djikstra-Algorithm
+# ENPM-661--Dijkstra-Algorithm
