@@ -6,7 +6,7 @@ Numpy
 HeapQ
 Time
 
-The resolution of the output video is low because the array generated (image) is of high dimensions. You coud resize the output video dimensions, by changing the 'resize' variable factor at the top of the video. If in case you get numpy exception error, where in memory is not enough to store the array, check this link:
+The resolution of the output video is low because the array generated (image) is of high dimensions. You coud resize the output  dimensions, by changing the 'resize' variable factor at the top of the code. If in case you get numpy exception error, where in memory is not enough to store the array, check this link:
 https://stackoverflow.com/questions/57507832/unable-to-allocate-array-with-shape-and-data-type
 
 Input the X and Y coordinates of the start and goal node, when prompted in the Terminal
