@@ -35,10 +35,10 @@ def map():
 
 # obstacles and the clearance on a black canvas
     image = np.zeros((height,width,3),dtype='uint8')
-    cv.rectangle(image, (95, 0), (180, 405), white, thickness=-1)
-    cv.rectangle(image, (100, 0), (175, 400), blue, thickness=-1)
-    cv.rectangle(image, (270, 95), (355, 500), white, thickness=-1)
-    cv.rectangle(image, (275, 100), (350, 500), red, thickness=-1)
+    cv.rectangle(image, (95, 500), (180, 95), white, thickness=-1)
+    cv.rectangle(image, (100, 500), (175, 100), blue, thickness=-1)
+    cv.rectangle(image, (270, 405), (355, 0), white, thickness=-1)
+    cv.rectangle(image, (275, 400), (350, 0), red, thickness=-1)
     cv.rectangle(image, (895, 45), (1105, 130), white, thickness=-1)
     cv.rectangle(image, (1015, 120), (1105, 380), white, thickness=-1)
     cv.rectangle(image, (895, 370), (1105, 455), white, thickness=-1)
@@ -51,11 +51,12 @@ def map():
     height = int(image.shape[0]*resize)
 
     resized_image = cv.resize(image,(width,height))
+
     return resized_image
 
 # Check if the node is within boundaries
 def within_boundary(node):
-    if 0 <= node[0] < 500*resize and 0 <= node[1] < 1200*resize:
+    if 0 <= node[0] < int(500*resize) and 0 <= node[1] < int(1200*resize):
         return True
 
 # Check if the node is in free-space
@@ -204,7 +205,7 @@ for i in range(len(image_out)):
     if counter%10 != 0:
         continue
     else:
-        out.write(image_out[i])
+        out.write(cv.flip(image_out[i],0))
     
 
 out.release()
