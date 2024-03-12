@@ -1,17 +1,19 @@
 # importing important libraries
 import cv2 as cv
 import numpy as np
-from collections import OrderedDict
 import heapq as hq
 import time
 
+#variable to resize the image
+resize = 0.25
+# Function to take user input
 def user_input():
-    start_x = int(input(f"X coordinate of the start position:"))
-    start_y = int(input(f"Y coordinate of the start position:"))
+    start_x = int(int(input(f"X coordinate of the start position:"))*resize)
+    start_y = int(int(input(f"Y coordinate of the start position:"))*resize)
     start_node = (start_y,start_x)
 
-    goal_x = int(input("X coordinate of the goal position"))
-    goal_y = int(input("Y coordinate of the goal position"))
+    goal_x = int(int(input("X coordinate of the goal position"))*resize)
+    goal_y = int(int(input("Y coordinate of the goal position"))*resize)
     goal_node = (goal_y,goal_x)
     return start_node,goal_node
 # Generating the map
@@ -45,72 +47,70 @@ def map():
     cv.rectangle(image,(900,375),(1100,450),yellow,thickness=-1)
     cv.fillPoly(image,[vertices_clr],white)
     cv.fillPoly(image,[vertices],green)
+    width = int(image.shape[1]*resize)
+    height = int(image.shape[0]*resize)
 
-    return image
+    resized_image = cv.resize(image,(width,height))
+    return resized_image
 
 # Check if the node is within boundaries
 def within_boundary(node):
-    if 0 <= node[0] < 500:
-        if 0 <= node[1] < 1200:
-            return True
-
-    return False
+    if 0 <= node[0] < 500*resize and 0 <= node[1] < 1200*resize:
+        return True
 
 # Check if the node is in free-space
-def in_free_space(image):
-    free_space = np.where(image == 0)
-    free_space_list = list(zip(free_space[0],free_space[1]))
-    free_space_dict = OrderedDict.fromkeys(free_space_list)
-    return list(free_space_dict)
+def in_free_space(image,node):
+    if np.all(image[node[0],node[1]] == (0,0,0)):
+        return True
 
 # Move the robot up
 def up(image, node):
     new_node = (node[0] + 1, node[1])
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,1)
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, 1)
 
 # Move the robot down
 def down(image, node):
     new_node = (node[0] - 1, node[1])
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,1)
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, 1)
 
 # Move the robot to the left
 def left(image, node):
     new_node = (node[0], node[1] - 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,1)
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, 1)
 
 # Move the robot to the right
 def right(image, node):
     new_node = (node[0], node[1] + 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,1)
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, 1)
 
 
 # Move the robot up diagonally to the right
 def up_right(image, node):
     new_node = (node[0] + 1, node[1] + 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,np.sqrt(2))
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, np.sqrt(2))
 
 # Move the robot up diagonally to the left
 def up_left(image, node):
     new_node = (node[0] + 1, node[1] - 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,np.sqrt(2))
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, np.sqrt(2))
 
 # Move the robot down diagonally to the right
 def down_right(image, node):
     new_node = (node[0] - 1, node[1] + 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,np.sqrt(2))
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, np.sqrt(2))
 
 # Move the robot down diagonally to the left
 def down_left(image, node):
     new_node = (node[0] - 1, node[1] - 1)
-    if within_boundary(new_node) and new_node in in_free_space(image):
-        return (new_node,np.sqrt(2))
+    if within_boundary(new_node) and in_free_space(image,new_node):
+        return (new_node, np.sqrt(2))
 
 # Grouping all the actions in a list
 def performActions(image,node):
@@ -142,7 +142,6 @@ def dijkstra(image,start_node,goal_node):
     open_list = []
     closed_list = {start_node:start_node_cost}
     path = {}
-    all_nodes = []
     hq.heappush(open_list,(start_node_cost,start_node))
     hq.heapify(open_list)
     while open_list:
@@ -163,19 +162,17 @@ def dijkstra(image,start_node,goal_node):
                     hq.heappush(open_list, (closed_list[new_node], new_node))
 
     final_path = backtrack(path,start_node,goal_node)
-    for keys in closed_list.keys():
-        all_nodes.append(keys)
-    return final_path,all_nodes
+    return final_path, list(closed_list.keys())
 
-
+# The main script
 start_time = time.time()
 image = map()
-image_out = []
+image_out = [image]
 shortest_path = []
 travelled_node = []
 while True:
     start, goal = user_input()
-    if start in in_free_space(image) and goal in in_free_space(image):
+    if in_free_space(image,start) and in_free_space(image,goal):
         path,all_nodes = dijkstra(image,start,goal)
         shortest_path = path
         travelled_node = all_nodes
@@ -183,22 +180,32 @@ while True:
     else:
         print("In obstacle space, reenter new coordinates")
 
-for i in travelled_node:
-    image[i[0],i[1]] = (255,0,255)
-    image_out.append(image)
+# Processing video frames for animation
+for i in range(len(travelled_node)):
+    img_copy = np.copy(image_out[i])
+    img_copy[travelled_node[i][0],travelled_node[i][1]] = (76,153,0)
+    image_out.append(img_copy)
 
-for j in shortest_path:
-    image[j[0],j[1]] = (0,255,255)
-    image_out.append(image)
+for j in range(len(shortest_path)):
+    img_copy = np.copy(image_out[-1])
+    img_copy[shortest_path[j][0],shortest_path[j][1]] = (204,204,204)
+    image_out.append(img_copy)
 
+# Creating the video
 frame_width = image.shape[1]
 frame_height = image.shape[0]
-fps = 5
+fps = 15
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
 out = cv.VideoWriter('output_video.mp4', fourcc, fps, (frame_width, frame_height))
 
+counter = 0
 for i in range(len(image_out)):
-    out.write(image_out[i])
+    counter += 1
+    if counter%10 != 0:
+        continue
+    else:
+        out.write(image_out[i])
+    
 
 out.release()
 
